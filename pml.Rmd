@@ -55,7 +55,7 @@ cv.error <- xgb.cv(train.control, dtrain,
 best.rounds <- which.min(cv.error$test.merror.mean)
 ```
 
-So the optimal number of rounds is `r best.rounds`. 
+So the optimal number of rounds is `r best.rounds`.  And the out of sample Error from cross validation is 0.9%.
 
 ## Model building using the best parameter estimated from Cross Validation
 Now we can build our model with this parameter.
@@ -71,6 +71,8 @@ confusionMatrix(preds, label[-inTrain])
 ```
 
 So the accuracy is 99.26%, and we will only expect 0.55% out of sample error rate using this model.
+
+In comparison our Cross Validation estimates the out of sample Error to be 0.9%.
 
 ## Why I built model as above way
 Gradient Boosting Trees is a very powerful machine learning technique, among the highest accuracies on most problems. The key parameter for this model is the number of rounds for the boosting. Here this number was estimated from 5-fold cross validation.

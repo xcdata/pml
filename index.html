@@ -144,8 +144,12 @@ label.levels &lt;- levels(label)
 label.id &lt;- as.integer(label) - 1
 data &lt;- as.matrix(training[, colnames(training) != 'classe'])
 library(caret)</code></pre>
+<pre><code>## Warning: package 'caret' was built under R version 3.2.5</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
 <pre class="r"><code>set.seed(131)
 library(xgboost)</code></pre>
+<pre><code>## Warning: package 'xgboost' was built under R version 3.2.5</code></pre>
 <pre class="r"><code>inTrain &lt;- createDataPartition(label, p = 0.6)[[1]]
 dtrain &lt;- xgb.DMatrix(data[inTrain,], label = label.id[inTrain])
 dtest &lt;- xgb.DMatrix(data[-inTrain,], label = label.id[-inTrain])</code></pre>
@@ -209,7 +213,7 @@ cv.error &lt;- xgb.cv(train.control, dtrain,
 ## [46] train-merror:0.000000+0.000000  test-merror:0.009341+0.002037
 ## Stopping. Best iteration: 44</code></pre>
 <pre class="r"><code>best.rounds &lt;- which.min(cv.error$test.merror.mean)</code></pre>
-<p>So the optimal number of rounds is 44.</p>
+<p>So the optimal number of rounds is 44. And the out of sample Error from cross validation is 0.9%.</p>
 </div>
 <div id="model-building-using-the-best-parameter-estimated-from-cross-validation" class="section level2">
 <h2>Model building using the best parameter estimated from Cross Validation</h2>
@@ -253,6 +257,7 @@ confusionMatrix(preds, label[-inTrain])</code></pre>
 ## Detection Prevalence   0.2846   0.1932   0.1754   0.1640   0.1828
 ## Balanced Accuracy      0.9977   0.9953   0.9936   0.9929   0.9960</code></pre>
 <p>So the accuracy is 99.26%, and we will only expect 0.55% out of sample error rate using this model.</p>
+<p>In comparison our Cross Validation estimates the out of sample Error to be 0.9%.</p>
 </div>
 <div id="why-i-built-model-as-above-way" class="section level2">
 <h2>Why I built model as above way</h2>
