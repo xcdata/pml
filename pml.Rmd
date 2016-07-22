@@ -1,0 +1,77 @@
+---
+title: "Machine Learning Assignment"
+author: "Xie Chao"
+date: "22 July 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The objective of this project is to build a model to predict how well the a person performs on weight lifting excercises. Data are form http://groupware.les.inf.puc-rio.br/har.
+
+## Data Processing
+
+```{r}
+training <- read.csv(
+  'https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv', 
+  na.strings = c('NA', '#DIV/0!', ''))
+```
+
+Remove unrelated columns (1 to 7) and columns with too many NA values:
+```{r}
+na.counts <- apply(training, 2, function(v) sum(is.na(v)))
+bad.cols <- unique(c(1:7, which(na.counts > ncol(training)/2)))
+training <- training[, -bad.cols]
+```
+
+## Preparing data for Gradient Boosting Trees (xgboost)
+```{r results='hide'}
+label <- training$classe
+label.levels <- levels(label)
+label.id <- as.integer(label) - 1
+data <- as.matrix(training[, colnames(training) != 'classe'])
+library(caret)
+set.seed(131)
+library(xgboost)
+inTrain <- createDataPartition(label, p = 0.6)[[1]]
+dtrain <- xgb.DMatrix(data[inTrain,], label = label.id[inTrain])
+dtest <- xgb.DMatrix(data[-inTrain,], label = label.id[-inTrain])
+```
+
+## Cross Validation
+We first use Cross Validation to findout the optimal number of rounds we run the boosting model:
+```{r cache = T}
+train.control <- list(
+  objective = 'multi:softmax', 
+  num_class = length(label.levels))
+cv.error <- xgb.cv(train.control, dtrain, 
+  nrounds = 100, 
+  nfold = 5,      # 5-fold cross validation
+  early.stop.round = 3, maximize = F)
+best.rounds <- which.min(cv.error$test.merror.mean)
+```
+
+So the optimal number of rounds is `r best.rounds`. 
+
+## Model building using the best parameter estimated from Cross Validation
+Now we can build our model with this parameter.
+```{r}
+mod <- xgb.train(train.control, dtrain, nrounds = best.rounds)
+```
+
+## Out of Sample Error Estimation
+Now let's estimate prediction accuracy using our reserved testing data:
+```{r}
+preds <- label.levels[predict(mod, dtest) + 1]
+confusionMatrix(preds, label[-inTrain])
+```
+
+So the accuracy is 99.26%, and we will only expect 0.55% out of sample error rate using this model.
+
+## Why I built model as above way
+Gradient Boosting Trees is a very powerful machine learning technique, among the highest accuracies on most problems. The key parameter for this model is the number of rounds for the boosting. Here this number was estimated from 5-fold cross validation.
+
