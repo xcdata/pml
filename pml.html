@@ -144,12 +144,8 @@ label.levels &lt;- levels(label)
 label.id &lt;- as.integer(label) - 1
 data &lt;- as.matrix(training[, colnames(training) != 'classe'])
 library(caret)</code></pre>
-<pre><code>## Warning: package 'caret' was built under R version 3.2.5</code></pre>
-<pre><code>## Loading required package: lattice</code></pre>
-<pre><code>## Loading required package: ggplot2</code></pre>
 <pre class="r"><code>set.seed(131)
 library(xgboost)</code></pre>
-<pre><code>## Warning: package 'xgboost' was built under R version 3.2.5</code></pre>
 <pre class="r"><code>inTrain &lt;- createDataPartition(label, p = 0.6)[[1]]
 dtrain &lt;- xgb.DMatrix(data[inTrain,], label = label.id[inTrain])
 dtest &lt;- xgb.DMatrix(data[-inTrain,], label = label.id[-inTrain])</code></pre>
